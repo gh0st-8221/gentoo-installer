@@ -261,9 +261,9 @@ int main(void) {
     fprintf(script, "emerge-webrsync\n");
 
     if (is_uefi) {
-        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub sys-boot/efibootmgr net-misc/networkmanager sys-fs/dosfstools x11-libs/libX11 x11-libs/libXrandr x11-base/xorg-server x11-apps/xinit dev-vcs/git dev-build/meson dev-build/ninja app-text/scdoc dev-libs/libdisplay-info dev-libs/libinput sys-auth/seatd media-libs/mesa x11-libs/libxkbcommon media-video/pipewire media-video/wireplumber\n");
+        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub sys-boot/efibootmgr net-misc/networkmanager sys-fs/dosfstools x11-libs/libX11 x11-libs/libXrandr x11-base/xorg-server x11-apps/xinit dev-vcs/git dev-build/meson dev-util/ninja app-text/scdoc media-libs/libdisplay-info dev-libs/libinput sys-auth/seatd media-libs/mesa x11-libs/libxkbcommon media-video/pipewire media-video/wireplumber\n");
     } else {
-        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub net-misc/networkmanager sys-fs/dosfstools x11-libs/libX11 x11-libs/libXrandr x11-base/xorg-server x11-apps/xinit dev-vcs/git dev-build/meson dev-build/ninja app-text/scdoc dev-libs/libdisplay-info dev-libs/libinput sys-auth/seatd media-libs/mesa x11-libs/libxkbcommon media-video/pipewire media-video/wireplumber\n");
+        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub net-misc/networkmanager sys-fs/dosfstools x11-libs/libX11 x11-libs/libXrandr x11-base/xorg-server x11-apps/xinit dev-vcs/git dev-build/meson dev-util/ninja app-text/scdoc media-libs/libdisplay-info dev-libs/libinput sys-auth/seatd media-libs/mesa x11-libs/libxkbcommon media-video/pipewire media-video/wireplumber\n");
     }
 
     fprintf(script, "echo '%s' > /etc/hostname\n", hostname);
