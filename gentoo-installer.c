@@ -159,7 +159,6 @@ int main(void) {
     char p1[128], p2[128];
     char hostname[64];
     char root_pass[128], username[64], user_pass[128];
-    char dotfiles_url[256];
     char stage3_url[512], cmd[1024];
 
     ensure_network();
@@ -173,10 +172,6 @@ int main(void) {
     get_string("Enter Root Password: ", root_pass, sizeof(root_pass));
     get_string("Enter Username: ", username, sizeof(username));
     get_string("Enter User Password: ", user_pass, sizeof(user_pass));
-    get_string("Enter Dotfiles Git URL (or press Enter for default): ", dotfiles_url, sizeof(dotfiles_url));
-    if (strlen(dotfiles_url) == 0) {
-        strcpy(dotfiles_url, "https://github.com/gh0st-8221/ghostwm-dotfiles");
-    }
 
     get_stage3_url(stage3_url, sizeof(stage3_url));
 
@@ -273,7 +268,7 @@ int main(void) {
 
     fprintf(script, "echo '%s' > /etc/hostname\n", hostname);
     fprintf(script, "echo 'hostname=\"%s\"' > /etc/conf.d/hostname\n", hostname);
-    fprintf(script, "echo '127.0.0.1 %s.localdomain %s localhost' > /dev/hosts\n", hostname, hostname);
+    fprintf(script, "echo '127.0.0.1 %s.localdomain %s localhost' > /etc/hosts\n", hostname, hostname);
 
     fprintf(script, "useradd -m -G wheel,portage,audio,video,usb,cdrom -s /bin/zsh %s\n", username);
     
@@ -298,7 +293,7 @@ int main(void) {
 
     fprintf(script, "su - %s -c '\n", username);
     fprintf(script, "mkdir -p ~/git\n");
-    fprintf(script, "git clone %s ~/git/ghostwm-dotfiles\n", dotfiles_url);
+    fprintf(script, "git clone https://github.com/gh0st-8221/ghostwm-dotfiles ~/git/ghostwm-dotfiles\n");
     fprintf(script, "git clone https://github.com/gh0st-8221/ghostwm ~/git/ghostwm\n");
     fprintf(script, "git clone https://github.com/kalole/xdg-desktop-portal-termfilechooser.git ~/git/xdg-desktop-portal-termfilechooser-git\n");
     
