@@ -209,6 +209,7 @@ int main(void) {
         fprintf(make_conf, "FCFLAGS=\"${COMMON_FLAGS}\"\n");
         fprintf(make_conf, "FFLAGS=\"${COMMON_FLAGS}\"\n");
         fprintf(make_conf, "MAKEOPTS=\"-j%ld\"\n", sysconf(_SC_NPROCESSORS_ONLN));
+        fprintf(make_conf, "USE=\"dbus\"\n");
         fprintf(make_conf, "ACCEPT_LICENSE=\"*\"\n");
         fprintf(make_conf, "FEATURES=\"getbinpkg\"\n");
         fprintf(make_conf, "EMERGE_DEFAULT_OPTS=\"--getbinpkg=y --binpkg-respect-use=y\"\n");
@@ -252,6 +253,9 @@ int main(void) {
     fprintf(script, "echo 'LANG=\"en_US.UTF-8\"' > /etc/env.d/02locale\n");
     fprintf(script, "echo 'LC_COLLATE=\"C.UTF-8\"' >> /etc/env.d/02locale\n");
     fprintf(script, "env-update && source /etc/profile\n");
+
+    fprintf(script, "mkdir -p /etc/portage/package.use\n");
+    fprintf(script, "echo 'net-wireless/wpa_supplicant dbus' > /etc/portage/package.use/wpa_supplicant\n");
 
     fprintf(script, "emerge-webrsync\n");
 
