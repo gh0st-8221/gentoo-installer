@@ -159,6 +159,7 @@ int main(void) {
     char p1[128], p2[128];
     char hostname[64];
     char root_pass[128], username[64], user_pass[128];
+    char dotfiles_url[256];
     char stage3_url[512], cmd[1024];
 
     ensure_network();
@@ -172,6 +173,10 @@ int main(void) {
     get_string("Enter Root Password: ", root_pass, sizeof(root_pass));
     get_string("Enter Username: ", username, sizeof(username));
     get_string("Enter User Password: ", user_pass, sizeof(user_pass));
+    get_string("Enter Dotfiles Git URL (or press Enter for default): ", dotfiles_url, sizeof(dotfiles_url));
+    if (strlen(dotfiles_url) == 0) {
+        strcpy(dotfiles_url, "https://github.com/gh0st-8221/ghostwm-dotfiles");
+    }
 
     get_stage3_url(stage3_url, sizeof(stage3_url));
 
@@ -209,7 +214,7 @@ int main(void) {
         fprintf(make_conf, "FCFLAGS=\"${COMMON_FLAGS}\"\n");
         fprintf(make_conf, "FFLAGS=\"${COMMON_FLAGS}\"\n");
         fprintf(make_conf, "MAKEOPTS=\"-j%ld\"\n", sysconf(_SC_NPROCESSORS_ONLN));
-        fprintf(make_conf, "USE=\"dbus\"\n");
+        fprintf(make_conf, "USE=\"dbus sound-server\"\n");
         fprintf(make_conf, "ACCEPT_LICENSE=\"*\"\n");
         fprintf(make_conf, "FEATURES=\"getbinpkg\"\n");
         fprintf(make_conf, "EMERGE_DEFAULT_OPTS=\"--getbinpkg=y --binpkg-respect-use=y\"\n");
@@ -261,14 +266,14 @@ int main(void) {
     fprintf(script, "emerge-webrsync\n");
 
     if (is_uefi) {
-        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub sys-boot/efibootmgr net-misc/networkmanager sys-fs/dosfstools\n");
+        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub sys-boot/efibootmgr net-misc/networkmanager sys-fs/dosfstools x11-libs/libX11 x11-libs/libXrandr x11-base/xorg-server x11-apps/xinit dev-vcs/git dev-util/meson dev-util/ninja app-text/scdoc dev-libs/libdisplay-info dev-libs/libinput sys-auth/seatd media-libs/mesa x11-libs/libxkbcommon media-video/pipewire media-video/wireplumber\n");
     } else {
-        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub net-misc/networkmanager sys-fs/dosfstools\n");
+        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub net-misc/networkmanager sys-fs/dosfstools x11-libs/libX11 x11-libs/libXrandr x11-base/xorg-server x11-apps/xinit dev-vcs/git dev-util/meson dev-util/ninja app-text/scdoc dev-libs/libdisplay-info dev-libs/libinput sys-auth/seatd media-libs/mesa x11-libs/libxkbcommon media-video/pipewire media-video/wireplumber\n");
     }
 
     fprintf(script, "echo '%s' > /etc/hostname\n", hostname);
     fprintf(script, "echo 'hostname=\"%s\"' > /etc/conf.d/hostname\n", hostname);
-    fprintf(script, "echo '127.0.0.1 %s.localdomain %s localhost' > /etc/hosts\n", hostname, hostname);
+    fprintf(script, "echo '127.0.0.1 %s.localdomain %s localhost' > /dev/hosts\n", hostname, hostname);
 
     fprintf(script, "useradd -m -G wheel,portage,audio,video,usb,cdrom -s /bin/zsh %s\n", username);
     
@@ -278,7 +283,7 @@ int main(void) {
     fprintf(script, "EOF\n");
 
     fprintf(script, "mkdir -p /etc/sudoers.d\n");
-    fprintf(script, "echo '%%wheel ALL=(ALL:ALL) ALL' > /etc/sudoers.d/wheel\n");
+    fprintf(script, "echo '%%wheel ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/wheel\n");
     fprintf(script, "chmod 0440 /etc/sudoers.d/wheel\n");
 
     if (is_uefi) {
@@ -288,7 +293,63 @@ int main(void) {
     }
     fprintf(script, "grub-mkconfig -o /boot/grub/grub.cfg\n");
 
+    fprintf(script, "rc-update add dbus default\n");
     fprintf(script, "rc-update add NetworkManager default\n");
+
+    fprintf(script, "su - %s -c '\n", username);
+    fprintf(script, "mkdir -p ~/git\n");
+    fprintf(script, "git clone %s ~/git/ghostwm-dotfiles\n", dotfiles_url);
+    fprintf(script, "git clone https://github.com/gh0st-8221/ghostwm ~/git/ghostwm\n");
+    fprintf(script, "git clone https://github.com/kalole/xdg-desktop-portal-termfilechooser.git ~/git/xdg-desktop-portal-termfilechooser-git\n");
+    
+    fprintf(script, "cd ~/git/xdg-desktop-portal-termfilechooser-git\n");
+    fprintf(script, "meson setup build\n");
+    fprintf(script, "meson compile -C build\n");
+    fprintf(script, "sudo meson install -C build\n");
+    
+    fprintf(script, "cd ~/git/ghostwm\n");
+    fprintf(script, "make\n");
+
+    fprintf(script, "if [ -d ~/git/ghostwm-dotfiles/usr/share/grub/themes/catppuccin-mocha-grub-theme ]; then\n");
+    fprintf(script, "    [ -d /usr/share/grub/themes/catppuccin-mocha-grub-theme ] && sudo cp -r /usr/share/grub/themes/catppuccin-mocha-grub-theme /usr/share/grub/themes/catppuccin-mocha-grub-theme.bak\n");
+    fprintf(script, "    sudo cp -r ~/git/ghostwm-dotfiles/usr/share/grub/themes/catppuccin-mocha-grub-theme /usr/share/grub/themes/\n");
+    fprintf(script, "fi\n\n");
+
+    fprintf(script, "if [ -f ~/git/ghostwm-dotfiles/etc/default/grub ]; then\n");
+    fprintf(script, "    [ -f /etc/default/grub ] && sudo cp /etc/default/grub /etc/default/grub.bak\n");
+    fprintf(script, "    sudo cp ~/git/ghostwm-dotfiles/etc/default/grub /etc/default/grub\n");
+    fprintf(script, "fi\n\n");
+
+    fprintf(script, "sudo grub-mkconfig -o /boot/grub/grub.cfg\n\n");
+
+    fprintf(script, "mkdir -p ~/.config\n");
+    fprintf(script, "[ -f ~/.config/xdg-desktop-portal-termfilechooser/config ] && cp ~/.config/xdg-desktop-portal-termfilechooser/config ~/.config/xdg-desktop-portal-termfilechooser/config.bak\n");
+    fprintf(script, "[ -f ~/.config/yazi/yazi-wrapper.sh ] && cp ~/.config/yazi/yazi-wrapper.sh ~/.config/yazi/yazi-wrapper.sh.bak\n");
+    fprintf(script, "cp -r ~/git/ghostwm-dotfiles/.config/. ~/.config/\n");
+    fprintf(script, "chmod +x ~/.config/yazi/yazi-wrapper.sh\n");
+
+    fprintf(script, "[ -f ~/.zshrc ] && cp ~/.zshrc ~/.zshrc.bak\n");
+    fprintf(script, "cp ~/git/ghostwm-dotfiles/.zshrc ~/.zshrc\n");
+    fprintf(script, "[ -f ~/.zprofile ] && cp ~/.zprofile ~/.zprofile.bak\n");
+    fprintf(script, "cp ~/git/ghostwm-dotfiles/.zprofile ~/.zprofile\n");
+
+    fprintf(script, "if [ -f ~/git/ghostwm-dotfiles/.xinitrc ]; then\n");
+    fprintf(script, "    [ -f ~/.xinitrc ] && cp ~/.xinitrc ~/.xinitrc.bak\n");
+    fprintf(script, "    cp ~/git/ghostwm-dotfiles/.xinitrc ~/.xinitrc\n");
+    fprintf(script, "fi\n\n");
+
+    fprintf(script, "if [ -d ~/.zsh/plugins/zsh-autosuggestions ]; then\n");
+    fprintf(script, "    cp -r ~/.zsh/plugins/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions.bak\n");
+    fprintf(script, "    rm -rf ~/.zsh/plugins/zsh-autosuggestions\n");
+    fprintf(script, "fi\n");
+    fprintf(script, "git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions\n\n");
+
+    fprintf(script, "if [ -d ~/.zsh/plugins/zsh-syntax-highlighting ]; then\n");
+    fprintf(script, "    cp -r ~/.zsh/plugins/zsh-syntax-highlighting ~/.zsh/plugins/zsh-syntax-highlighting.bak\n");
+    fprintf(script, "    rm -rf ~/.zsh/plugins/zsh-syntax-highlighting\n");
+    fprintf(script, "fi\n");
+    fprintf(script, "git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.zsh/plugins/zsh-syntax-highlighting\n");
+    fprintf(script, "'\n");
     
     fclose(script);
 
