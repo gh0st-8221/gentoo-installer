@@ -261,16 +261,16 @@ int main(void) {
     fprintf(script, "emerge-webrsync\n");
 
     if (is_uefi) {
-        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub sys-boot/efibootmgr net-misc/networkmanager sys-fs/dosfstools x11-libs/libX11 x11-libs/libXrandr x11-base/xorg-server x11-apps/xinit dev-vcs/git dev-util/meson dev-util/ninja app-text/scdoc dev-libs/libdisplay-info dev-libs/libinput sys-auth/seatd media-libs/mesa x11-libs/libxkbcommon media-video/pipewire media-video/wireplumber\n");
+        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub sys-boot/efibootmgr net-misc/networkmanager sys-fs/dosfstools x11-libs/libX11 x11-libs/libXrandr x11-base/xorg-server x11-apps/xinit dev-vcs/git dev-build/meson dev-util/ninja app-text/scdoc dev-libs/libdisplay-info dev-libs/libinput sys-auth/seatd media-libs/mesa x11-libs/libxkbcommon media-video/pipewire media-video/wireplumber\n");
     } else {
-        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub net-misc/networkmanager sys-fs/dosfstools x11-libs/libX11 x11-libs/libXrandr x11-base/xorg-server x11-apps/xinit dev-vcs/git dev-util/meson dev-util/ninja app-text/scdoc dev-libs/libdisplay-info dev-libs/libinput sys-auth/seatd media-libs/mesa x11-libs/libxkbcommon media-video/pipewire media-video/wireplumber\n");
+        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub net-misc/networkmanager sys-fs/dosfstools x11-libs/libX11 x11-libs/libXrandr x11-base/xorg-server x11-apps/xinit dev-vcs/git dev-build/meson dev-util/ninja app-text/scdoc dev-libs/libdisplay-info dev-libs/libinput sys-auth/seatd media-libs/mesa x11-libs/libxkbcommon media-video/pipewire media-video/wireplumber\n");
     }
 
     fprintf(script, "echo '%s' > /etc/hostname\n", hostname);
     fprintf(script, "echo 'hostname=\"%s\"' > /etc/conf.d/hostname\n", hostname);
     fprintf(script, "echo '127.0.0.1 %s.localdomain %s localhost' > /etc/hosts\n", hostname, hostname);
 
-    fprintf(script, "useradd -m -G wheel,portage,audio,video,usb,cdrom -s /bin/zsh %s\n", username);
+    fprintf(script, "useradd -m -G wheel,portage,audio,video,cdrom -s /bin/zsh %s\n", username);
     
     fprintf(script, "chpasswd << 'EOF'\n");
     fprintf(script, "root:%s\n", root_pass);
@@ -333,6 +333,7 @@ int main(void) {
     fprintf(script, "    cp ~/git/ghostwm-dotfiles/.xinitrc ~/.xinitrc\n");
     fprintf(script, "fi\n\n");
 
+    fprintf(script, "mkdir -p ~/.zsh/plugins\n");
     fprintf(script, "if [ -d ~/.zsh/plugins/zsh-autosuggestions ]; then\n");
     fprintf(script, "    cp -r ~/.zsh/plugins/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions.bak\n");
     fprintf(script, "    rm -rf ~/.zsh/plugins/zsh-autosuggestions\n");
