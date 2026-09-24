@@ -256,6 +256,7 @@ int main(void) {
 
     fprintf(script, "mkdir -p /etc/portage/package.use\n");
     fprintf(script, "echo 'net-wireless/wpa_supplicant dbus' > /etc/portage/package.use/wpa_supplicant\n");
+    fprintf(script, "echo 'sys-kernel/installkernel dracut grub' > /etc/portage/package.use/installkernel\n");
 
     fprintf(script, "emerge-webrsync\n");
 
