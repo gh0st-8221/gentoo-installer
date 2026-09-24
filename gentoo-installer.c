@@ -261,19 +261,25 @@ int main(void) {
     fprintf(script, "emerge-webrsync\n");
 
     if (is_uefi) {
-        fprintf(script, "emerge --quiet app-editors/helix sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub sys-boot/efibootmgr net-misc/networkmanager sys-fs/dosfstools\n");
+        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub sys-boot/efibootmgr net-misc/networkmanager sys-fs/dosfstools\n");
     } else {
-        fprintf(script, "emerge --quiet app-editors/helix sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub net-misc/networkmanager sys-fs/dosfstools\n");
+        fprintf(script, "emerge --quiet app-editors/helix app-admin/sudo app-shells/zsh app-misc/fastfetch sys-kernel/gentoo-kernel-bin sys-kernel/linux-firmware sys-boot/grub net-misc/networkmanager sys-fs/dosfstools\n");
     }
 
     fprintf(script, "echo '%s' > /etc/hostname\n", hostname);
+    fprintf(script, "echo 'hostname=\"%s\"' > /etc/conf.d/hostname\n", hostname);
+    fprintf(script, "echo '127.0.0.1 %s.localdomain %s localhost' > /etc/hosts\n", hostname, hostname);
 
-    fprintf(script, "useradd -m -G wheel,portage,audio,video,usb,cdrom -s /bin/bash %s\n", username);
+    fprintf(script, "useradd -m -G wheel,portage,audio,video,usb,cdrom -s /bin/zsh %s\n", username);
     
     fprintf(script, "chpasswd << 'EOF'\n");
     fprintf(script, "root:%s\n", root_pass);
     fprintf(script, "%s:%s\n", username, user_pass);
     fprintf(script, "EOF\n");
+
+    fprintf(script, "mkdir -p /etc/sudoers.d\n");
+    fprintf(script, "echo '%%wheel ALL=(ALL:ALL) ALL' > /etc/sudoers.d/wheel\n");
+    fprintf(script, "chmod 0440 /etc/sudoers.d/wheel\n");
 
     if (is_uefi) {
         fprintf(script, "grub-install --target=x86_64-efi --efi-directory=/efi --removable\n");
