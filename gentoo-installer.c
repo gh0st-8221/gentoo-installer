@@ -92,7 +92,7 @@ void get_stage3_url(char *stage3_url_out, size_t size) {
 
     if (f) {
         while (fgets(line, sizeof(line), f)) {
-            if (line[0] != '#' && line[0] != '\n' && line[0] != '\r' && strlen(line) > 5) {
+            if (line[0] != '#' && line[0] != '-' && strstr(line, ".tar.") != NULL) {
                 sscanf(line, "%255s", rel_path);
                 break;
             }
@@ -159,7 +159,7 @@ int main(void) {
     char p1[128], p2[128];
     char hostname[64];
     char root_pass[128], username[64], user_pass[128];
-char stage3_url[512], cmd[1024];
+    char stage3_url[512], cmd[1024];
 
     ensure_network();
 
